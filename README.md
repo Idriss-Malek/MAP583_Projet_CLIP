@@ -1,1 +1,1 @@
-# MAP583-Projet_CLIP-
+# MAP583-Projet_CLIP
