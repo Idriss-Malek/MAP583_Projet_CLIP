@@ -5,14 +5,25 @@ import numpy as np
 import heapq
 import openai
 import os
+import json
 from torch.nn.functional import log_softmax, softmax
 
 
 class Classifier:
-    def __init__(self, labels,key):
+    def __init__(self, key, labels=None, descriptors=None):
+        if labels is None:
+            self.labels = None
+            self.descriptors = None
+        else:
+            if descriptors is None:
+                self.descriptors = {label: [] for label in labels}
+            else:
+                if list(descriptors.keys()) != labels:
+                    print("Descriptors don't match the labels")
+                else:
+                    self.descriptors = descriptors
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         self.labels = labels   #categories
-        self.descriptors = {label: [] for label in labels}
         self.clip_model, self.preprocess = clip.load("ViT-B/32", device=self.device)
         self.gpt = 0  # todo
         self.tokenizer = 0  # todo
@@ -40,6 +51,22 @@ class Classifier:
             message = [line.replace("- ", "") for line in message]  # Remove the bullet points
             return message
 
+    def save_classifier(self, filename):
+        with open(filename+'.txt', 'w') as file:
+            json.dump(self.descriptors, file)
+
+    def load_classifier(self, json_file):
+        with open(json_file, 'r') as file:
+            descriptors = json.load(file)
+        if self.labels is not None:
+            if list(descriptors.keys()) == self.labels:
+                self.descriptors = descriptors
+            else:
+                print("Descriptors don't match labels.")
+        else:
+            self.labels = list(descriptors.keys())
+            self.descriptors = descriptors
+
     def descriptors_fn(self):
         '''
         Method that will fill the self.descriptors dictionnary using a large language model such as gpt3
@@ -58,6 +85,7 @@ class Classifier:
         s/= len(self.labels)
         self.threshold = 0.5/s
         print(self.threshold)
+
     def similarity_fn(self, images_, label):
         '''
         :param images_: images to analyze
