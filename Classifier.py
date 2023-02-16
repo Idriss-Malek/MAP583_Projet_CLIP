@@ -46,7 +46,7 @@ class Classifier:
         '''
         for label in self.labels:
             # Method code here with GPT
-            self.descriptors[label] = self.descriptor_label(label)
+            self.descriptors[label] = self.descriptor_label_fn(label)
 
     def compute_threshold(self):
         '''
