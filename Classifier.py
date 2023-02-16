@@ -3,11 +3,13 @@ import clip
 import matplotlib.pyplot as plt
 import numpy as np
 import heapq
+import openai
+import os
 from torch.nn.functional import log_softmax, softmax
 
 
 class Classifier:
-    def __init__(self, labels):
+    def __init__(self, labels,key):
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         self.labels = labels   #categories
         self.descriptors = {label: [] for label in labels}
@@ -19,16 +21,33 @@ class Classifier:
         self.similarity_desc = None #similarity scores for descriptors
         self.similarity = None  #similarity scores for categories
         self.softmax_similarity_desc = None   #probabilities for descriptors
+        openai.api_key = os.getenv(key)
+
+    def descriptor_label_fn(self, label):
+            question = f"Q: What are useful features for distinguishing a {label} in a photo? the answer should only be in the form of bullet point following the schema 'is/has {{feature}} {{adjective}}'. \nA: There are several useful visual features to tell there is an {label} in a photo:"
+            prompt = f"Question: {question}\nAnswer:"
+            completions = openai.Completion.create(
+                engine="davinci",
+                prompt=prompt,
+                max_tokens=70,
+                n=1,
+                stop=None,
+                temperature=0.5,
+            )
+
+            message = completions.choices[0].text.strip()
+            message = message.split("\n")  # Split the message into separate lines
+            message = [line.replace("- ", "") for line in message]  # Remove the bullet points
+            return message
 
     def descriptors_fn(self):
         '''
         Method that will fill the self.descriptors dictionnary using a large language model such as gpt3
         '''
-        #for label in self.labels
+        for label in self.labels:
             # Method code here with GPT
-            #descriptors = [label + ' which is/has ' + descriptor for descriptor in descriptors]
-            #self.descriptors[label] = descriptors
-        raise NotImplementedError("This function is not implemented yet")
+            self.descriptors[label] = self.descriptor_label(label)
+
     def compute_threshold(self):
         '''
         Compute a threshold that allows us to distinguich between descriptors that are in the p
