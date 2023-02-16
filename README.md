@@ -11,5 +11,5 @@ Classifier class:
 
 
 Issues:
--Threshold
+-Threshold  
 -As implemented now, a descriptor is likely to be considered not in the image if he isn't in the correct class, even if he does appear in the image  
