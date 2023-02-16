@@ -9,16 +9,16 @@ from torch.nn.functional import log_softmax, softmax
 class Classifier:
     def __init__(self, labels):
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
-        self.labels = labels
+        self.labels = labels   #categories
         self.descriptors = {label: [] for label in labels}
         self.clip_model, self.preprocess = clip.load("ViT-B/32", device=self.device)
         self.gpt = 0  # todo
         self.tokenizer = 0  # todo
         self.threshold = 0.2
-        self.image = None
-        self.similarity_desc = None
-        self.similarity = None
-        self.softmax_similarity_desc = None
+        self.image = None   #image to analyze
+        self.similarity_desc = None #similarity scores for descriptors
+        self.similarity = None  #similarity scores for categories
+        self.softmax_similarity_desc = None   #probabilities for descriptors
 
     def descriptors_fn(self):
         #for label in self.labels
@@ -75,7 +75,8 @@ class Classifier:
         if self.softmax_similarity_desc is None:
             exp_similarity_desc = {key: np.exp(val) for (key, val) in self.similarity_desc.items()}
             sum_similarity_desc = np.sum([np.sum(val) for (key, val) in exp_similarity_desc.items()])
-            self.softmax_similarity_desc = {key: val / sum_similarity_desc for (key, val) in exp_similarity_desc.items()}
+            #self.softmax_similarity_desc = {key: val / sum_similarity_desc for (key, val) in exp_similarity_desc.items()}  #softmax on all descriptors (labels combined)
+            self.softmax_similarity_desc = {key: val / np.sum(val) for (key, val) in exp_similarity_desc.items()}  #for each label, softmax of descriptors
         plt.imshow(self.image)
         print(label + ' is characterized by the following features: ')
         for i in range(len(descriptors)):
