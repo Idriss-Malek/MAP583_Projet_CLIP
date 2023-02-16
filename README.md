@@ -13,3 +13,12 @@ Implementing the method described in : https://arxiv.org/abs/2210.07183
 **Issues:**    
 -Threshold  
 -As implemented now, a descriptor is likely to be considered not in the image if he isn't in the correct class, even if he does appear in the image  
+
+
+**Solutions:**  
+-For threshold, there is an attempt in the classifier class with the compute_threshold method   
+-For explanations:  
+	2 ways of computing the probabiltiies for descriptors:  
+	-softmax on all descriptors (all labels combined)  
+	-for each label, softmax on the set of descriptors  
+	Second way seems to work better to explain for the cat dog example  
