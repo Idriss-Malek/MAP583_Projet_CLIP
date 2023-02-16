@@ -40,7 +40,7 @@ class Classifier:
         if len(images.shape) == 3:
             single_image = True
             images = images.unsqueeze(0)
-        token_desc = clip.tokenize([label+desc for desc in self.descriptors[label]]).to(self.device)
+        token_desc = clip.tokenize([label+' which '+desc for desc in self.descriptors[label]]).to(self.device)
         with torch.no_grad():
             logits_per_image, logits_per_descriptor = self.clip_model(images, token_desc)
             similarity = np.mean(logits_per_image.cpu().numpy(), axis=1)
@@ -52,6 +52,7 @@ class Classifier:
         self.image = image
         self.similarity_desc = None
         self.similarity = None
+        self.softmax_similarity_desc = None
 
     def classify(self):
         if self.image is None:
@@ -61,7 +62,7 @@ class Classifier:
         self.similarity_desc = {label: self.similarity_fn(self.image, label)[1][0] for label in self.labels}
         probs = softmax(torch.tensor(self.similarity), dim=-1)
         probs = [(label, probs[i].item()) for i, label in enumerate(self.labels)]
-        top_labels = heapq.nlargest(5, probs)
+        top_labels = sorted(heapq.nlargest(5, probs))
         plt.imshow(self.image)
         print('This image may show: ')
         for i, pair in enumerate(top_labels):
