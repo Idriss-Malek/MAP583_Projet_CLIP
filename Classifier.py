@@ -10,7 +10,7 @@ from torch.nn.functional import log_softmax, softmax
 
 
 class Classifier:
-    def __init__(self, key, labels=None, descriptors=None):
+    def __init__(self, key'fake key', labels=None, descriptors=None):
         if labels is None:
             self.labels = None
             self.descriptors = None
