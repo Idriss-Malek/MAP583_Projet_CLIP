@@ -1,7 +1,8 @@
 # MAP583-Projet_CLIP  
 Implementing the method described in : https://arxiv.org/abs/2210.07183      
 
-To use this repository, you can follow the tutorials.
+To use this repository, you can follow the tutorials.  
+Don't forget to write your key in the config.ini file.
 
 **Classifier class:**  
 -needs a set of labels (depends on the dataset)  
