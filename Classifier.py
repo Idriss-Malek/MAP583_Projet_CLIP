@@ -10,11 +10,6 @@ from torch.nn.functional import log_softmax, softmax
 
 import configparser
 
-config = configparser.ConfigParser()
-config.read('config.ini')
-
-api_key = config['openai']['api_key']
-openai.api_key = api_key
 class Classifier:
     def __init__(self, labels=None, descriptors=None):
         if labels is None:
@@ -96,21 +91,26 @@ class Classifier:
         self.threshold = 0.5/s
         print(self.threshold)
 
-    def similarity_fn(self, images_, label):
+    def similarity_fn(self, images, label, preprocessed=False):
         '''
-        :param images_: images to analyze
+        :param images: images to analyze
         :param label: label to analyze
+        :param preprocessed: bool
         :return: similarity of the label to the images and similarities of each descriptor
         '''
         single_image = False
-        images = self.preprocess(images_).to(self.device)
+        if not preprocessed:
+            try:
+                images = torch.stack([self.preprocess(image) for image in images])
+            except TypeError:
+                images=self.preprocess(images)
         if len(images.shape) == 3:
             single_image = True
             images = images.unsqueeze(0)
         token_desc = clip.tokenize([label+' which '+desc for desc in self.descriptors[label]]).to(self.device)
         with torch.no_grad():
             logits_per_image, logits_per_descriptor = self.clip_model(images, token_desc)
-            similarity = np.mean(logits_per_image.cpu().numpy(), axis=1)
+            similarity = torch.mean(logits_per_image.cpu(), dim=1)
             if single_image:
                 self.similarity.append(similarity.item())  #store similarity
         return similarity, logits_per_image.numpy()
@@ -144,6 +144,17 @@ class Classifier:
             for i, pair in enumerate(top_labels):
                 print('{}) {}: {}%'.format(i + 1, pair[0], pair[1]*100))
         return top_labels[0][0]
+
+    def multi_classify(self, images, preprocessed=True):
+        """
+
+        :param images:images to classify
+        :param preprocessed:
+        :return: index of labels
+        """
+        sim_tensor = torch.cat([self.similarity_fn(images, label, preprocessed) for label in self.labels])
+        return torch.argmax(sim_tensor)
+
     def explain(self, label):
         '''
         Explain which descriptor of the label pertains to the image stored.
