@@ -7,10 +7,17 @@ import openai
 import os
 import json
 from torch.nn.functional import log_softmax, softmax
+import configparser
+
+config = configparser.ConfigParser()
+config.read('config.ini')
+
+api_key = config['openai']['api_key']
+openai.api_key = os.getenv(api_key)
 
 
 class Classifier:
-    def __init__(self, key'fake key', labels=None, descriptors=None):
+    def __init__(self, labels=None, descriptors=None):
         if labels is None:
             self.labels = None
             self.descriptors = None
@@ -25,14 +32,11 @@ class Classifier:
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         self.labels = labels   #categories
         self.clip_model, self.preprocess = clip.load("ViT-B/32", device=self.device)
-        self.gpt = 0  # todo
-        self.tokenizer = 0  # todo
         self.threshold = 0.2
         self.image = None   #image to analyze
         self.similarity_desc = None #similarity scores for descriptors
         self.similarity = None  #similarity scores for categories
         self.softmax_similarity_desc = None   #probabilities for descriptors
-        openai.api_key = os.getenv(key)
 
     def descriptor_label_fn(self, label):
             question = f"Q: What are useful features for distinguishing a {label} in a photo? the answer should only be in the form of bullet point following the schema 'is/has {{feature}} {{adjective}}'. \nA: There are several useful visual features to tell there is an {label} in a photo:"
@@ -40,7 +44,7 @@ class Classifier:
             completions = openai.Completion.create(
                 engine="davinci",
                 prompt=prompt,
-                max_tokens=70,
+                max_tokens=250,
                 n=1,
                 stop=None,
                 temperature=0.5,
