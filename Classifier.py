@@ -8,7 +8,13 @@ import os
 import json
 from torch.nn.functional import log_softmax, softmax
 
+import configparser
 
+config = configparser.ConfigParser()
+config.read('config.ini')
+
+api_key = config['openai']['api_key']
+openai.api_key = api_key
 class Classifier:
     def __init__(self, labels=None, descriptors=None):
         if labels is None:
