@@ -7,13 +7,6 @@ import openai
 import os
 import json
 from torch.nn.functional import log_softmax, softmax
-import configparser
-
-config = configparser.ConfigParser()
-config.read('config.ini')
-
-api_key = config['openai']['api_key']
-openai.api_key = os.getenv(api_key)
 
 
 class Classifier:
