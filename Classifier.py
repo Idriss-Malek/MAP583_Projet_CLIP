@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import heapq
 import openai
-import os
+import time
 import json
 from torch.nn.functional import log_softmax, softmax
 
@@ -48,7 +48,6 @@ class Classifier:
                 stop=None,
                 temperature=0.5,
             )
-            print(completions)
             message = completions.choices[0].text.strip()
             message = message.split("\n")  # Split the message into separate lines
             message = [line.replace("- ", "") for line in message]  # Remove the bullet points
@@ -74,9 +73,17 @@ class Classifier:
         '''
         Method that will fill the self.descriptors dictionnary using a large language model such as gpt3
         '''
+        requests_per_minute = 45
+        request_count = 0
+        wait_time = 60
         for label in self.labels:
             # Method code here with GPT
+            if request_count >= requests_per_minute:
+                print("Rate limit reached. Waiting for 1 minute...")
+                time.sleep(wait_time)
+                request_count = 0
             self.descriptors[label] = self.descriptor_label_fn(label, engine)
+            request_count += 1
 
     def compute_threshold(self):
         '''
@@ -117,7 +124,7 @@ class Classifier:
         self.similarity = None
         self.softmax_similarity_desc = None
 
-    def classify(self):
+    def classify(self, verbose=False):
         '''
         Classify the image that is stored.
         WARNING: Can only be used after storing an image with set_image
@@ -131,11 +138,12 @@ class Classifier:
         probs = [(label, probs[i].item()) for i, label in enumerate(self.labels)]
         top_labels = heapq.nlargest(5, probs)
         top_labels = sorted(top_labels, key=lambda x: -x[1])
-        plt.imshow(self.image)
-        print('This image may show: ')
-        for i, pair in enumerate(top_labels):
-            print('{}) {}: {}%'.format(i + 1, pair[0], pair[1]*100))
-
+        if verbose:
+            plt.imshow(self.image)
+            print('This image may show: ')
+            for i, pair in enumerate(top_labels):
+                print('{}) {}: {}%'.format(i + 1, pair[0], pair[1]*100))
+        return top_labels[0][0]
     def explain(self, label):
         '''
         Explain which descriptor of the label pertains to the image stored.
