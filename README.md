@@ -2,7 +2,11 @@
 Implementing the method described in : https://arxiv.org/abs/2210.07183      
 
 To use this repository, you can follow the tutorials.  
-Don't forget to write your key in the config.ini file.
+Don't forget to write your key in the config.ini file. Here is the syntax:
+
+[openai]
+api_key = YOUR_API_KEY_HERE
+
 
 **Classifier class:**  
 -needs a set of labels (depends on the dataset)  
