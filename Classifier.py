@@ -37,18 +37,18 @@ class Classifier:
         self.similarity = None  #similarity scores for categories
         self.softmax_similarity_desc = None   #probabilities for descriptors
 
-    def descriptor_label_fn(self, label):
-            question = f"Q: What are useful features for distinguishing a {label} in a photo? the answer should only be in the form of bullet point following the schema 'is/has {{feature}} {{adjective}}'. \nA: There are several useful visual features to tell there is an {label} in a photo:"
+    def descriptor_label_fn(self, label, engine):
+            question = f"Q: What are useful features for distinguishing a {label} in a photo? the answer should only be in the form 'has {{feature}} {{adjective}} {{newline}}'. \nA: There are several useful visual features to tell there is an {label} in a photo:"
             prompt = f"Question: {question}\nAnswer:"
             completions = openai.Completion.create(
-                engine="davinci",
+                engine=engine,
                 prompt=prompt,
                 max_tokens=250,
                 n=1,
                 stop=None,
                 temperature=0.5,
             )
-
+            print(completions)
             message = completions.choices[0].text.strip()
             message = message.split("\n")  # Split the message into separate lines
             message = [line.replace("- ", "") for line in message]  # Remove the bullet points
@@ -70,13 +70,13 @@ class Classifier:
             self.labels = list(descriptors.keys())
             self.descriptors = descriptors
 
-    def descriptors_fn(self):
+    def descriptors_fn(self, engine):
         '''
         Method that will fill the self.descriptors dictionnary using a large language model such as gpt3
         '''
         for label in self.labels:
             # Method code here with GPT
-            self.descriptors[label] = self.descriptor_label_fn(label)
+            self.descriptors[label] = self.descriptor_label_fn(label, engine)
 
     def compute_threshold(self):
         '''
@@ -129,7 +129,8 @@ class Classifier:
         self.similarity_desc = {label: self.similarity_fn(self.image, label)[1][0] for label in self.labels}
         probs = softmax(torch.tensor(self.similarity), dim=-1)
         probs = [(label, probs[i].item()) for i, label in enumerate(self.labels)]
-        top_labels = sorted(heapq.nlargest(5, probs))
+        top_labels = heapq.nlargest(5, probs)
+        top_labels = sorted(top_labels, key=lambda x: -x[1])
         plt.imshow(self.image)
         print('This image may show: ')
         for i, pair in enumerate(top_labels):

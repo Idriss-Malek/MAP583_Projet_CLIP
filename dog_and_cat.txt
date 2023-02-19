@@ -1,0 +1,1 @@
+{"cat": ["has whiskers", "has a long tail", "has pointy ears", "has fur"], "dog": ["has four legs", "has a tail", "is furry"]}
