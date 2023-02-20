@@ -33,7 +33,7 @@ class Classifier:
         self.softmax_similarity_desc = None   #probabilities for descriptors
 
     def descriptor_label_fn(self, label, engine):
-            question = f"Q: What are useful features for distinguishing a {label} in a photo? the answer should only be in the form 'has {{feature}} {{adjective}} {{newline}}'. \nA: There are several useful visual features to tell there is an {label} in a photo:"
+            question = f"Q: What are unique and useful visual features that characterizes a {label} in a photo? the answer should only be in the form 'has {{feature}} {{adjective}} {{newline}}'. \nA: There are several useful visual features to tell there is an {label} in a photo:"
             prompt = f"Question: {question}\nAnswer:"
             completions = openai.Completion.create(
                 engine=engine,
@@ -68,7 +68,7 @@ class Classifier:
         '''
         Method that will fill the self.descriptors dictionnary using a large language model such as gpt3
         '''
-        requests_per_minute = 45
+        requests_per_minute = 30
         request_count = 0
         wait_time = 60
         for label in self.labels:
@@ -125,7 +125,7 @@ class Classifier:
         self.similarity = None
         self.softmax_similarity_desc = None
 
-    def classify(self, verbose=False):
+    def classify(self, preprocessed=False, verbose=False):
         '''
         Classify the image that is stored.
         WARNING: Can only be used after storing an image with set_image
@@ -134,11 +134,10 @@ class Classifier:
             print('Set Image first!')
             return
         self.similarity = []
-        self.similarity_desc = {label: self.similarity_fn(self.image, label)[1][0] for label in self.labels}
+        self.similarity_desc = {label: self.similarity_fn(self.image, label, preprocessed)[1][0] for label in self.labels}
         probs = softmax(torch.tensor(self.similarity), dim=-1)
         probs = [(label, probs[i].item()) for i, label in enumerate(self.labels)]
-        top_labels = heapq.nlargest(5, probs)
-        top_labels = sorted(top_labels, key=lambda x: -x[1])
+        top_labels = sorted(probs, key=lambda x: -x[1])[:5]
         if verbose:
             plt.imshow(self.image)
             print('This image may show: ')
@@ -153,8 +152,8 @@ class Classifier:
         :param preprocessed:
         :return: index of labels
         """
-        sim_tensor = torch.stack([self.similarity_fn(images, label, preprocessed) for label in self.labels])
-        return torch.argmax(sim_tensor)
+        sim_tensor = torch.stack([self.similarity_fn(images, label, preprocessed)[0] for label in self.labels], dim=1)
+        return torch.argmax(sim_tensor, dim=1)
 
     def explain(self, label):
         '''
