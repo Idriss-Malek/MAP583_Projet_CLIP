@@ -103,10 +103,11 @@ class Classifier:
             try:
                 images = torch.stack([self.preprocess(image) for image in images])
             except TypeError:
-                images=self.preprocess(images)
+                images = self.preprocess(images)
         if len(images.shape) == 3:
             single_image = True
             images = images.unsqueeze(0)
+        images = images.to(self.device)
         token_desc = clip.tokenize([label+' which '+desc for desc in self.descriptors[label]]).to(self.device)
         with torch.no_grad():
             logits_per_image, logits_per_descriptor = self.clip_model(images, token_desc)
@@ -152,7 +153,7 @@ class Classifier:
         :param preprocessed:
         :return: index of labels
         """
-        sim_tensor = torch.cat([self.similarity_fn(images, label, preprocessed) for label in self.labels])
+        sim_tensor = torch.stack([self.similarity_fn(images, label, preprocessed) for label in self.labels])
         return torch.argmax(sim_tensor)
 
     def explain(self, label):
