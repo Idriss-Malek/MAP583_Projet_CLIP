@@ -91,7 +91,7 @@ class Classifier:
         self.threshold = 0.5/s
         print(self.threshold)
 
-    def similarity_fn(self, images, label, preprocessed=False):
+    def similarity_fn(self, images, label, preprocessed=False, to_explain= False):
         '''
         :param images: images to analyze
         :param label: label to analyze
@@ -108,7 +108,10 @@ class Classifier:
             single_image = True
             images = images.unsqueeze(0)
         images = images.to(self.device)
-        token_desc = clip.tokenize([label+' which '+desc for desc in self.descriptors[label]]).to(self.device)
+        if not to_explain:
+            token_desc = clip.tokenize([label+' which '+desc for desc in self.descriptors[label]]).to(self.device)
+        else:
+            token_desc = clip.tokenize([desc for desc in self.descriptors[label]]).to(self.device)
         with torch.no_grad():
             logits_per_image, logits_per_descriptor = self.clip_model(images, token_desc)
             similarity = torch.mean(logits_per_image.cpu(), dim=1)
@@ -135,9 +138,12 @@ class Classifier:
             return
         self.similarity = []
         self.similarity_desc = {label: self.similarity_fn(self.image, label, preprocessed)[1][0] for label in self.labels}
-        probs = softmax(torch.tensor(self.similarity), dim=-1)
-        probs = [(label, probs[i].item()) for i, label in enumerate(self.labels)]
+        probs = [(label, self.similarity[i]) for i, label in enumerate(self.labels)]
         top_labels = sorted(probs, key=lambda x: -x[1])[:5]
+        self.threshold = top_labels[0][1]-5
+        top_sim = [x[1] for x in top_labels]
+        top_sim = softmax(torch.tensor(top_sim), dim=-1)
+        top_labels = [(top_labels[i][0], top_sim[i]) for i in range (5)]
         if verbose:
             plt.imshow(self.image)
             print('This image may show: ')
@@ -155,7 +161,7 @@ class Classifier:
         sim_tensor = torch.stack([self.similarity_fn(images, label, preprocessed)[0] for label in self.labels], dim=1)
         return torch.argmax(sim_tensor, dim=1)
 
-    def explain(self, label):
+    def explain(self, label, preprocessed=False):
         '''
         Explain which descriptor of the label pertains to the image stored.
         WARNING: Can only be used after using classify once on the image stored.
@@ -163,6 +169,20 @@ class Classifier:
         if self.similarity_fn is None:
             print('Classify first!')
             return
+        sim_explain = self.similarity_fn(self.image, label, preprocessed, to_explain=True)
+        descriptors = self.descriptors[label]
+        print(label + ' is characterized by the following features: ')
+        for i in range(len(descriptors)):
+            if sim_explain[1][0][i] > self.threshold:
+                print('\U00002705 {}: {}'.format(descriptors[i],
+                                                  sim_explain))  # green check emoji
+            else:
+                print('\U0000274C {}: {}'.format(descriptors[i],
+                                                  sim_explain))  # red mark emoji
+
+
+
+        """
         descriptors = self.descriptors[label]
         if self.softmax_similarity_desc is None:
             exp_similarity_desc = {key: np.exp(val) for (key, val) in self.similarity_desc.items()}
@@ -176,6 +196,7 @@ class Classifier:
                 print('\U00002705 {}: {}%'.format(descriptors[i], 100*self.softmax_similarity_desc[label][i]))  # green check emoji
             else:
                 print('\U0000274C {}: {}%'.format(descriptors[i], 100*self.softmax_similarity_desc[label][i]))  # red mark emoji
+        """
 
     def reset_image(self):
         '''
