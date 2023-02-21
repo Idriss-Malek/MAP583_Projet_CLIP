@@ -3,4 +3,4 @@ nano .gitignore
 .ipynb_checkpoints
 __pycache__
 config.ini
-caltech101
+caltech_test/caltech101
