@@ -1,6 +1,5 @@
 from Classifier import Classifier
 import sys
-import json
 import configparser
 import openai
 import time
@@ -64,7 +63,7 @@ if __name__ == "__main__":
     repo = g.get_repo('Idriss-Malek/MAP583_Projet_CLIP')
 
     # create a new commit with the updated txt file
-    commit_message = 'Add value of x'
+    commit_message = 'results'
     repo.create_file(sys.argv[1]+'.txt', commit_message, content)
 
     # push the changes to the repository
