@@ -2,6 +2,7 @@
 Implementing the method described in : https://arxiv.org/abs/2210.07183      
 
 To use this repository, you can follow the tutorials.  
+You can use the script to directly test this method on any dataset of images. the dataset should be given as an ImageFolder. First argument after script name is the root of the Image Folder and optional second argument is the location of the txt file with descriptors written with the json syntax.  
 Don't forget to write your key in the config.ini file. Here is the syntax:
 
 [openai]  
