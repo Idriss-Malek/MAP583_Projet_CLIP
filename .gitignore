@@ -5,3 +5,4 @@ __pycache__
 config.ini
 caltech_test/caltech101
 test.ipynb
+descriptors
