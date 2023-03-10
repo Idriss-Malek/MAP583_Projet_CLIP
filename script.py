@@ -4,6 +4,7 @@ import json
 import configparser
 import openai
 import time
+from github import Github
 
 if __name__ == "__main__":
     dataset = ImageFolder(root=sys.argv[1])
@@ -49,6 +50,26 @@ if __name__ == "__main__":
     print(f'Accuracy of the custom algorithm: {avg1}')
     print(f'Accuracy of the traditional zero shot prediction: {avg2}')
 
+    with open(sys.argv[1]+'.txt', 'w') as f:
+        f.write(f'Accuracy of the custom algorithm: {avg1}')
+        f.write(f'Accuracy of the traditional zero shot prediction: {avg2}')
+    with open(sys.argv[1]+'.txt', 'r') as file:
+        content = file.read()
+
+    # authenticate with GitHub using a personal access token
+    access_token = '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'
+    g = Github(access_token)
+
+    # get the repository where you want to push the file
+    repo = g.get_repo('Idriss-Malek/MAP583_Projet_CLIP')
+
+    # create a new commit with the updated txt file
+    commit_message = 'Add value of x'
+    repo.create_file(sys.argv[1]+'.txt', commit_message, content)
+
+    # push the changes to the repository
+    branch = repo.get_branch('main')
+    branch.edit(branch.commit.sha, None, 'results')
 
 
 
