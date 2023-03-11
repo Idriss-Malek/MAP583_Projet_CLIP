@@ -40,3 +40,10 @@ So we see that there is more than 4% improvement when using descriptors.
 Accuracy of the custom algorithm: 64.67211842536926%  
 Accuracy of the traditional zero shot prediction: 61.16741895675659%    
 So we see that there is more than 3.5% improvement when using descriptors.  
+
+| Dataset | Zero shot Classification with descriptions | Zero shot Classification | Improvement |  
+| --------------- | ---------------| --------------- | --------------- |  
+| Caltech101 | 82.58%  | 78.25% | 4.33% |
+| Oxford Flowers102 | 64.67%   | 61.17% | 3.5% |
+| Food101 |  |  |  |
+
