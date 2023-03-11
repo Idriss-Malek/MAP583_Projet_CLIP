@@ -1,0 +1,2 @@
+Accuracy of the custom algorithm: 64.67211842536926%
+Accuracy of the traditional zero shot prediction: 61.16741895675659%

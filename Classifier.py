@@ -68,7 +68,7 @@ class Classifier:
         '''
         Method that will fill the self.descriptors dictionnary using a large language model such as gpt3
         '''
-        requests_per_minute = 30
+        requests_per_minute = 20
         request_count = 0
         wait_time = 60
         for label in self.labels:
