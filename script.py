@@ -56,7 +56,7 @@ if __name__ == "__main__":
         content = file.read()
 
     # authenticate with GitHub using a personal access token
-    access_token = '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'
+    access_token = '' #tofill
     g = Github(access_token)
 
     # get the repository where you want to push the file
