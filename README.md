@@ -35,3 +35,8 @@ api_key = YOUR_API_KEY_HERE
 -Accuracy of the custom algorithm: 82.57583975791931%  
 -Accuracy of the traditional zero shot prediction: 78.25313806533813%  
 So we see that there is more than 4% improvement when using descriptors.  
+
+**Test on Oxford flowers102 dataset**    
+Accuracy of the custom algorithm: 64.67211842536926%  
+Accuracy of the traditional zero shot prediction: 61.16741895675659%    
+So we see that there is more than 3.5% improvement when using descriptors.  
