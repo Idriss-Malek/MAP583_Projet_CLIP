@@ -38,4 +38,5 @@ So we see that there is more than 4% improvement when using descriptors.
 
 **Test on Oxford flowers102 dataset**    
 Accuracy of the custom algorithm: 64.67211842536926%  
-Accuracy of the traditional zero shot prediction: 61.16741895675659%  
+Accuracy of the traditional zero shot prediction: 61.16741895675659%    
+So we see that there is more than 3.5% improvement when using descriptors.  
