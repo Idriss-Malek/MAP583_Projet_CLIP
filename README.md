@@ -31,15 +31,7 @@ api_key = YOUR_API_KEY_HERE
 	Second way seems to work better to explain for the cat dog example  
 -With Clip, should we tokenize '{category} which is/has {descriptor}' or just '{descriptor}'. (paper says first solution and accroding to dog-cat example, it seems to wrok better).  
 
-**Test on Caltech101 dataset**  
--Accuracy of the custom algorithm: 82.57583975791931%  
--Accuracy of the traditional zero shot prediction: 78.25313806533813%  
-So we see that there is more than 4% improvement when using descriptors.  
-
-**Test on Oxford flowers102 dataset**    
-Accuracy of the custom algorithm: 64.67211842536926%  
-Accuracy of the traditional zero shot prediction: 61.16741895675659%    
-So we see that there is more than 3.5% improvement when using descriptors.  
+**Results**  
 
 | Dataset | Zero shot Classification with descriptions | Zero shot Classification | Improvement |  
 | --------------- | ---------------| --------------- | --------------- |  
